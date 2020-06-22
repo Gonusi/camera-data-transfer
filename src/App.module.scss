@@ -1,0 +1,30 @@
+$unit_spacing: 15px;
+
+html,
+body {
+  background: #000000;
+  color: white;
+  text-align: center;
+}
+
+.header,
+.main {
+  margin: 0 auto;
+  max-width: 700px;
+  width: 100%;
+}
+
+.nav {
+  display: flex;
+  margin-top: $unit_spacing * 2;
+  width: 100%;
+}
+
+.navLink {
+  width: 50%;
+
+  &.active button {
+    background: white;
+    color: black;
+  }
+}

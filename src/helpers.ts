@@ -1,5 +1,5 @@
 export function getChunksFromString(str: string, chunkLength: number) {
-  return str.match(new RegExp(".{1," + chunkLength + "}", "g"));
+  return str.match(new RegExp(".{1," + chunkLength + "}", "g")) || [];
 }
 
 // To avoid changing QR code size, which throws off the QR reader, make each chunk have identical length

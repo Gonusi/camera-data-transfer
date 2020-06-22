@@ -1,0 +1,18 @@
+@import "../../app.module";
+
+.textarea {
+  background: black;
+  border: 2px solid white;
+  box-sizing: border-box;
+  color: white;
+  height: 150px;
+  margin-top: $unit_spacing * 2;
+  max-width: 100%;
+  min-width: 100%;
+  outline: none;
+  width: 100%;
+
+  &:focus {
+    background: rgba(white, 0.1);
+  }
+}

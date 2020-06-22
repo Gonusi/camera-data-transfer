@@ -1,66 +1,46 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Qr from "qrcode";
+import styles from "./DataDisplay.module.scss";
 
 interface DataDisplayProps {
   dataChunks: string[];
+  isTransmitting: boolean;
 }
 
-function useDisplay(canvas: HTMLCanvasElement | null, dataChunks: string[]) {
-  const interval = useRef<number>();
-  const currChunkIndex = useRef(0);
+function DataDisplay({ dataChunks, isTransmitting }: DataDisplayProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const [currChunkIndex, setCurrChunkIndex] = useState(0);
+  const canvasContainerWidth = canvasContainerRef.current?.offsetWidth || 0;
 
   useEffect(() => {
-    function startDataDisplay() {
-      console.log("Starting display");
-      interval.current = window.setInterval(() => {
+    if (isTransmitting) {
+      const timeout = setTimeout(() => {
         const packet = {
           t: dataChunks.length - 1,
-          n: currChunkIndex.current,
-          d: dataChunks[currChunkIndex.current],
+          n: currChunkIndex,
+          d: dataChunks[currChunkIndex],
         };
-
-        Qr.toCanvas(canvas, JSON.stringify(packet));
-        if (dataChunks.length - 1 <= currChunkIndex.current) {
-          currChunkIndex.current = 0;
+        Qr.toCanvas(canvasRef.current, JSON.stringify(packet), {
+          width: canvasContainerWidth,
+        });
+        if (dataChunks.length - 1 <= currChunkIndex) {
+          setCurrChunkIndex(0);
         } else {
-          currChunkIndex.current++;
+          setCurrChunkIndex((i) => i + 1);
         }
       }, 100);
+      return () => {
+        window.clearTimeout(timeout);
+      };
+    } else {
+      setCurrChunkIndex(0);
     }
-
-    function stopDataDisplay() {
-      currChunkIndex.current = 0;
-      if (interval.current !== null) {
-        window.clearInterval(interval.current);
-      }
-    }
-
-    console.log("Canvas", canvas);
-    if (canvas) {
-      startDataDisplay();
-    }
-    return () => {
-      stopDataDisplay();
-    };
-  }, [canvas, dataChunks, interval]);
-
-  return currChunkIndex.current;
-}
-
-function DataDisplay({ dataChunks }: DataDisplayProps) {
-  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
-  const currentChunkIndex = useDisplay(canvas, dataChunks);
-
-  const getRef = useCallback((node) => {
-    if (node !== null) {
-      setCanvas(node);
-    }
-  }, []);
+  }, [canvasContainerWidth, currChunkIndex, dataChunks, isTransmitting]);
 
   return (
-    <div>
-      <canvas ref={getRef} />
-      <div>Current chunk: {currentChunkIndex}</div>
+    <div className={styles.canvasContainer} ref={canvasContainerRef}>
+      <canvas ref={canvasRef} />
     </div>
   );
 }

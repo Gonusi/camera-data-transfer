@@ -1,0 +1,30 @@
+@import "../../App.module.scss";
+
+.video {
+  border: 2px solid white;
+  box-sizing: border-box;
+  margin: $unit_spacing * 2 0;
+  max-height: 70vh;
+  width: 100%;
+}
+
+.lastPacket,
+.result {
+  margin-top: $unit_spacing * 2;
+  text-align: left;
+  font-size: 12px;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.label {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.button {
+  width: calc(50% - #{$unit_spacing});
+}
