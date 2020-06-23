@@ -6,6 +6,10 @@
   margin: $unit_spacing * 2 0;
   max-height: 70vh;
   width: 100%;
+
+  &.gotResult {
+    border: 2px solid red;
+  }
 }
 
 .lastPacket,

@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import classNames from "classnames";
 import QrScanner from "qr-scanner";
 import Button from "../Button/Button";
 import styles from "./Client.module.scss";
@@ -6,28 +7,48 @@ import styles from "./Client.module.scss";
 QrScanner.WORKER_PATH = `${process.env.PUBLIC_URL}/qr-scanner-worker.min.js`;
 
 function Client() {
-  const [isRunning, setIsRunning] = useState(false);
+  const [isReceiving, setIsReceiving] = useState(false);
   const [lastPacket, setLastPacket] = useState("");
-  const [obj, setObj] = useState<{ [key: number]: string }>();
+  const [obj, setObj] = useState<{ [key: number]: string } | null>(null);
   const [result, setResult] = useState("");
   const [total, setTotal] = useState(null);
   const qrScannerRef = useRef<QrScanner>();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [gotResultStyle, setGotResultStyle] = useState(false);
+
+  const handleClear = () => {
+    setIsReceiving(false);
+    setLastPacket("");
+    setObj(null);
+    setResult("");
+    setTotal(null);
+  };
 
   useEffect(() => {
     const video = videoRef.current;
-    if (isRunning && video) {
+    let gotResultStyleTimeout: number;
+    if (isReceiving && video) {
       qrScannerRef.current = new QrScanner(
         video as HTMLVideoElement,
         (lastPacket: string) => {
           setLastPacket(lastPacket);
+          setGotResultStyle(true);
+          gotResultStyleTimeout = window.setTimeout(() => {
+            setGotResultStyle(false);
+          }, 50);
         }
       );
       qrScannerRef.current!.start();
     } else if (qrScannerRef.current) {
       qrScannerRef.current.stop();
     }
-  }, [isRunning]);
+
+    return () => {
+      if (gotResultStyleTimeout) {
+        window.clearInterval(gotResultStyleTimeout);
+      }
+    };
+  }, [isReceiving]);
 
   useEffect(() => {
     const parsedLastPacket = JSON.parse(lastPacket || "{}");
@@ -59,16 +80,20 @@ function Client() {
 
   return (
     <div>
-      <video ref={videoRef} className={styles.video} />
+      <video
+        ref={videoRef}
+        className={classNames(styles.video, {
+          [styles.gotResult]: gotResultStyle,
+        })}
+      />
       <div className={styles.buttonContainer}>
-        <Button className={styles.button} onClick={() => setIsRunning(true)}>
-          Start receiving
-        </Button>
         <Button
           className={styles.button}
-          disabled={!obj}
-          onClick={() => setIsRunning(false)}
+          onClick={() => setIsReceiving(!isReceiving)}
         >
+          {isReceiving ? "Stop" : "Start receiving"}
+        </Button>
+        <Button className={styles.button} disabled={!obj} onClick={handleClear}>
           {obj ? "Clear" : <s>Clear</s>}
         </Button>
       </div>
